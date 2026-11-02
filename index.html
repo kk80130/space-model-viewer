@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#eceae4" />
+    <link rel="icon" href="data:," />
+    <title>空间 3D 展示平台</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./presentation.css?v=share-1" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/build/three.module.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <p class="eyebrow">SPACE / PREVIEW WORKBENCH</p>
+            <h1>空间预览台</h1>
+          </div>
+        </div>
+        <div class="workspace-context"><span class="context-line"></span><span id="video-context">科幻餐厅 · 拆解动画</span><span id="model-context">科幻餐厅 · 剖切展示</span></div>
+        <div class="content-view-switch" role="group" aria-label="展示方式">
+          <button type="button" data-content-view="video" aria-pressed="false" aria-controls="video-panel">拆解动画</button>
+          <button type="button" data-content-view="3d" aria-pressed="true" aria-controls="model-stage">三维预览</button>
+        </div>
+        <div class="topbar-actions">
+          <button id="import-model-button" class="topbar-button import-model-button" type="button" data-import-model disabled aria-label="导入自己的 GLB 模型"><span data-icon="plus"></span><span>导入模型</span></button>
+          <span id="video-status-pill" class="status-pill is-loading" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span id="video-status-text">正在加载动画</span></span>
+          <button id="presentation-button" class="topbar-button" type="button" title="专注预览" aria-label="专注预览" aria-pressed="false"><span data-icon="layout"></span><span>专注预览</span></button>
+          <button id="panel-toggle-button" class="icon-button panel-toggle" type="button" title="模型对象" aria-label="模型对象" aria-expanded="false"><span data-icon="panel"></span></button>
+          <span id="status-pill" class="status-pill is-loading" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="status-text">正在加载模型</span>
+          </span>
+          <button id="export-button" class="topbar-button" type="button" title="导出场景配置">
+            <span aria-hidden="true">↓</span>
+            <span>导出配置</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section id="video-panel" class="video-panel" aria-label="餐厅拆解动画" hidden>
+          <div class="video-viewport">
+            <video id="diner-video" controls playsinline preload="metadata" poster="./assets/diner-animation-poster.jpg" data-src="./assets/diner-exploded-animation.mp4" aria-label="完整餐厅展开、悬浮展示和复原动画">
+              当前浏览器无法播放视频，可通过下方链接下载观看。
+            </video>
+            <button id="video-start-button" class="video-start-button" type="button"><span class="video-play-icon" aria-hidden="true"></span><span>播放拆解动画</span></button>
+            <div id="video-error" class="video-error" role="alert" hidden><strong>视频暂时无法播放</strong><p>可以重新加载，或下载视频观看。</p><button id="video-retry-button" type="button">重新加载</button></div>
+          </div>
+          <div class="video-footer">
+            <div><h2>餐厅拆解演示</h2><p><span class="video-phase">完整装配</span> <span aria-hidden="true">→</span> <span class="video-phase">有序展开</span> <span aria-hidden="true">→</span> <span class="video-phase">悬浮展示</span> <span aria-hidden="true">→</span> <span class="video-phase">原位复原</span></p></div>
+            <a class="video-download" href="./assets/diner-exploded-animation.mp4" download="Diner_Exploded_Animation.mp4"><span data-icon="download" aria-hidden="true"></span>下载视频</a>
+          </div>
+        </section>
+        <aside class="panel left-panel">
+          <section class="panel-section">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">ASSET</p>
+                <h2>模型资产</h2>
+              </div>
+              <button id="upload-button" class="icon-button" type="button" title="导入 GLB 模型" aria-label="导入 GLB 模型">＋</button>
+              <input id="model-input" type="file" accept=".glb" hidden />
+            </div>
+            <div id="asset-card" class="asset-card">
+              <div class="asset-preview" aria-hidden="true"><span class="asset-preview-grid"></span><span>GLB</span></div>
+              <div class="asset-copy">
+                <strong id="asset-name">餐厅剖切场景.glb</strong>
+                <span id="asset-meta">正在读取</span>
+              </div>
+              <span class="asset-state" aria-label="已加载">●</span>
+            </div>
+            <button id="drop-target" class="drop-target" type="button">
+              <span class="drop-icon" aria-hidden="true">＋</span>
+              <span>导入自己的 GLB 模型</span>
+            </button>
+            <p class="import-help">选择或拖入 .glb 文件，贴图需打包在模型内。模型仅在当前浏览器读取，刷新后需重新导入。</p>
+            <button id="demo-model-button" class="text-button demo-model-button" type="button">恢复餐厅示例</button>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading compact">
+              <div>
+                <p class="section-kicker">MATERIAL STUDIES</p>
+                <h2>材质预览</h2>
+              </div>
+            </div>
+            <div class="preset-grid" role="group" aria-label="显示风格">
+              <button class="preset-button is-selected" data-render-mode="pbr" type="button">
+                <span class="preset-swatch swatch-pbr" aria-hidden="true"></span>
+                <span>贴图 / PBR</span>
+              </button>
+              <button class="preset-button" data-render-mode="toon" type="button">
+                <span class="preset-swatch swatch-toon" aria-hidden="true"></span>
+                <span>三渲二</span>
+              </button>
+              <button class="preset-button" data-render-mode="sketch" type="button">
+                <span class="preset-swatch swatch-sketch" aria-hidden="true"></span>
+                <span>素描</span>
+              </button>
+              <button class="preset-button" data-render-mode="clay" type="button">
+                <span class="preset-swatch swatch-clay" aria-hidden="true"></span>
+                <span>白模</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading compact"><div><p class="section-kicker">VIEWPORT</p><h2>场景外观</h2></div></div>
+            <div class="appearance-row"><span>背景</span><div class="background-swatches" role="group" aria-label="背景颜色">
+              <button class="is-selected" data-background="light" type="button" title="浅色背景" aria-label="浅色背景" aria-pressed="true"></button>
+              <button data-background="dark" type="button" title="深色背景" aria-label="深色背景" aria-pressed="false"></button>
+            </div></div>
+            <label class="toggle-row"><span><strong>地面网格</strong></span><input id="grid-toggle" type="checkbox" /><span class="toggle-track" aria-hidden="true"></span></label>
+            <label class="toggle-row"><span><strong>接触阴影</strong></span><input id="shadow-toggle" type="checkbox" checked /><span class="toggle-track" aria-hidden="true"></span></label>
+            <div class="control-stack">
+              <label class="range-row" for="exposure"><span>曝光</span><output id="exposure-value">1.00</output></label>
+              <input id="exposure" class="range-control" type="range" min="0.3" max="2" step="0.05" value="1" />
+            </div>
+          </section>
+
+          <section class="panel-section light-section">
+            <div class="section-heading compact">
+              <div>
+                <p class="section-kicker">LIGHTING LAB</p>
+                <h2>灯光</h2>
+              </div>
+            </div>
+            <details class="light-details">
+            <summary>自定义光照<span data-icon="chevron"></span></summary>
+            <label class="toggle-row">
+              <span>
+                <strong>环境 / HDRI</strong>
+                <small id="environment-meta">默认棚拍环境</small>
+              </span>
+              <input id="environment-toggle" type="checkbox" checked />
+              <span class="toggle-track" aria-hidden="true"></span>
+            </label>
+            <div class="control-stack">
+              <label class="field-label" for="environment-input">环境贴图</label>
+              <input id="environment-input" class="file-control" type="file" accept=".hdr,.png,.jpg,.jpeg" />
+              <label class="range-row" for="environment-intensity">
+                <span>强度</span>
+                <output id="environment-intensity-value">1.00</output>
+              </label>
+              <input id="environment-intensity" class="range-control" type="range" min="0" max="2" step="0.05" value="1" />
+              <label class="range-row" for="environment-rotation">
+                <span>旋转</span>
+                <output id="environment-rotation-value">0°</output>
+              </label>
+              <input id="environment-rotation" class="range-control" type="range" min="0" max="360" step="1" value="0" />
+            </div>
+            <label class="toggle-row">
+              <span>
+                <strong>外部主光</strong>
+                <small>可调方向的 Sun 光</small>
+              </span>
+              <input id="key-toggle" type="checkbox" checked />
+              <span class="toggle-track" aria-hidden="true"></span>
+            </label>
+            <div class="control-stack">
+              <label class="range-row" for="key-azimuth">
+                <span>水平角度</span>
+                <output id="key-azimuth-value">-45°</output>
+              </label>
+              <input id="key-azimuth" class="range-control" type="range" min="-180" max="180" step="1" value="-45" />
+              <label class="range-row" for="key-elevation">
+                <span>俯仰角度</span>
+                <output id="key-elevation-value">50°</output>
+              </label>
+              <input id="key-elevation" class="range-control" type="range" min="5" max="85" step="1" value="50" />
+              <label class="range-row" for="key-intensity">
+                <span>强度</span>
+                <output id="key-intensity-value">2.90</output>
+              </label>
+              <input id="key-intensity" class="range-control" type="range" min="0" max="5" step="0.05" value="2.9" />
+            </div>
+            <label class="toggle-row">
+              <span>
+                <strong>场景灯光</strong>
+                <small id="model-lights-meta">读取 GLB 灯光节点</small>
+              </span>
+              <input id="model-lights-toggle" type="checkbox" />
+              <span class="toggle-track" aria-hidden="true"></span>
+            </label>
+            </details>
+          </section>
+        </aside>
+
+        <section id="model-stage" class="stage-panel">
+          <div id="canvas-wrap" class="canvas-wrap">
+            <canvas id="scene-canvas" aria-label="可交互三维模型"></canvas>
+            <div id="loading-state" class="loading-state">
+              <div class="loading-ring" aria-hidden="true"></div>
+              <p>正在建立空间视图</p>
+            </div>
+            <div id="error-state" class="message-state is-hidden">
+              <strong>模型加载失败</strong>
+              <span id="error-text">请确认模型文件可读取。</span>
+              <button class="primary-button" type="button" data-import-model>重新选择 GLB 模型</button>
+            </div>
+            <div id="drop-overlay" class="drop-overlay is-hidden">
+              <span>松开以导入 GLB 模型</span>
+            </div>
+            <div class="stage-toolbar">
+              <button id="reset-button" class="stage-button" type="button" title="恢复视角">
+                <span aria-hidden="true">↺</span>
+                <span>重置视角</span>
+              </button>
+              <div class="stage-readout"><span class="readout-label">VIEW</span><span id="mode-label" class="mode-label">贴图 / PBR</span></div>
+            </div>
+            <div class="view-tabs" role="group" aria-label="标准视角">
+              <button type="button" data-camera-view="perspective" class="is-selected" aria-pressed="true">透视</button>
+              <button type="button" data-camera-view="front" aria-pressed="false">正面</button>
+              <button type="button" data-camera-view="side" aria-pressed="false">侧面</button>
+              <button type="button" data-camera-view="top" aria-pressed="false">俯视</button>
+            </div>
+            <div class="view-tools" role="toolbar" aria-label="预览工具">
+              <button id="focus-button" class="icon-button" type="button" title="适应模型" aria-label="适应模型"><span data-icon="focus"></span></button>
+              <button id="auto-rotate-button" class="icon-button" type="button" title="自动旋转" aria-label="自动旋转" aria-pressed="false"><span data-icon="rotate"></span></button>
+              <span class="tool-divider"></span>
+              <button id="screenshot-button" class="icon-button" type="button" title="保存预览图" aria-label="保存预览图"><span data-icon="camera"></span></button>
+              <button id="fullscreen-button" class="icon-button" type="button" title="全屏预览" aria-label="全屏预览" aria-pressed="false"><span data-icon="expand"></span></button>
+            </div>
+            <div class="stage-footer"><span id="scene-stats">正在读取场景</span><span class="stage-coordinate">SPACE / VIEWPORT</span></div>
+          </div>
+        </section>
+
+        <aside class="panel right-panel">
+          <section class="panel-section animation-section">
+            <div class="section-heading compact">
+              <div>
+                <p class="section-kicker">MOTION</p>
+                <h2>模型动画</h2>
+              </div>
+              <span class="count-badge" id="animation-count">0</span>
+            </div>
+            <div id="animation-empty" class="empty-list">模型未包含可播放动画</div>
+            <div id="animation-controls" class="animation-controls is-hidden">
+              <label class="field-label" for="animation-select">动画片段</label>
+              <select id="animation-select" class="field-control"></select>
+              <div class="button-row">
+                <button id="animation-play-button" class="primary-button" type="button">
+                  <span aria-hidden="true">▷</span>
+                  <span>播放</span>
+                </button>
+                <button id="animation-restart-button" class="secondary-button" type="button">
+                  <span aria-hidden="true">↺</span>
+                  <span>重播</span>
+                </button>
+              </div>
+              <label class="range-row" for="animation-speed">
+                <span>播放速度</span>
+                <output id="animation-speed-value">1.00×</output>
+              </label>
+              <input id="animation-speed" class="range-control" type="range" min="0.25" max="2" step="0.05" value="1" />
+            </div>
+            <div id="selected-object" class="selected-object empty">
+              <span class="selected-icon" aria-hidden="true">◇</span>
+              <div>
+                <strong id="selected-name">选择一个对象</strong>
+                <small id="selected-meta">点击画布或下方对象列表</small>
+              </div>
+            </div>
+            <div class="inspector-tools">
+              <button id="selection-focus-button" class="secondary-button" type="button" disabled><span data-icon="focus"></span><span>聚焦</span></button>
+              <button id="selection-visibility-button" class="secondary-button" type="button" disabled><span data-icon="eye"></span><span>隐藏</span></button>
+            </div>
+          </section>
+
+          <section class="panel-section objects-section">
+            <div class="section-heading compact">
+              <div>
+                <p class="section-kicker">SCENE HIERARCHY</p>
+                <h2>模型对象</h2>
+              </div>
+              <span class="count-badge" id="object-count">0</span>
+              <button id="clear-selection-button" class="text-button" type="button">清除</button>
+            </div>
+            <input id="object-search" class="search-field" type="search" placeholder="搜索对象名称" />
+            <div id="object-list" class="object-list">
+              <div class="empty-list">模型加载后显示可配置对象</div>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script src="./ui.js"></script>
+    <script>
+      window.addEventListener("error", (event) => {
+        const status = document.querySelector("#status-text");
+        const errorState = document.querySelector("#error-state");
+        const errorText = document.querySelector("#error-text");
+        if (status) status.textContent = "加载失败";
+        if (errorState) errorState.classList.remove("is-hidden");
+        if (errorText) errorText.textContent = event.message || "网页模块加载失败";
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        const status = document.querySelector("#status-text");
+        const errorState = document.querySelector("#error-state");
+        const errorText = document.querySelector("#error-text");
+        if (status) status.textContent = "加载失败";
+        if (errorState) errorState.classList.remove("is-hidden");
+        if (errorText) errorText.textContent = event.reason?.message || "网页模块加载失败";
+      });
+    </script>
+    <script src="./presentation.js?v=share-1"></script>
+  </body>
+</html>

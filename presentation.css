@@ -1,0 +1,57 @@
+.content-view-switch { display: flex; flex-shrink: 0; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 5px; background: #eef0eb; }
+.content-view-switch button { padding: 7px 12px; border-radius: 3px; background: transparent; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.content-view-switch button[aria-pressed="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 3px #26312612; }
+.content-view-switch button:hover { color: var(--accent); }
+.app-shell.is-video .workspace { display: grid; grid-template-columns: minmax(0, 1fr); }
+.app-shell.is-video .workspace > .panel, .app-shell.is-video #model-stage,
+.app-shell.is-video #status-pill, .app-shell.is-video #export-button,
+.app-shell.is-video #presentation-button, .app-shell.is-video #panel-toggle-button,
+.app-shell.is-video #model-context { display: none; }
+.app-shell.is-video #import-model-button { display: none; }
+.import-model-button { background: var(--accent); color: white; border-color: var(--accent); white-space: nowrap; }
+.import-model-button:hover { background: #9e4033; }
+.import-help { margin-top: 10px; color: var(--muted); font-size: 11px; line-height: 1.7; }
+.demo-model-button { margin-top: 10px; font-size: 11px; }
+.app-shell:not(.is-video) #video-context, .app-shell:not(.is-video) #video-status-pill { display: none; }
+.video-panel { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; min-height: 0; height: 100%; background: #11171c; }
+#video-panel[hidden], .video-start-button[hidden], .video-error[hidden] { display: none; }
+.video-viewport { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+#diner-video { display: block; width: 100%; height: 100%; object-fit: contain; background: #11171c; }
+.video-start-button { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 14px; padding: 17px 23px; border: 1px solid #fff5; border-radius: 5px; background: #10171ce8; color: #f4eee2; font-size: 14px; box-shadow: 0 8px 32px #0003; }
+.video-start-button:hover { background: #243038; border-color: #e6c995; }
+.video-play-icon { width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 13px solid #e4b977; }
+.video-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 17px 28px; border-top: 1px solid var(--line); background: var(--paper); }
+.video-footer h2 { font-size: 14px; }
+.video-footer p { margin-top: 6px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.video-footer p span { margin: 0 7px; color: #b5a182; }
+.video-footer p .video-phase { display: inline-block; margin: 0; color: inherit; white-space: nowrap; }
+.video-download { display: inline-flex; align-items: center; flex-shrink: 0; gap: 7px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font-size: 11px; text-decoration: none; }
+.video-download:hover { border-color: #aa9c85; background: #f1ede5; }
+.video-download:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.video-error { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 24px; background: #11171cf5; color: #eee7d9; text-align: center; }
+.video-error p { color: #aeb8be; font-size: 12px; }
+.video-error button { padding: 10px 16px; border-radius: 4px; background: #e4c897; color: #182126; }
+@media (min-width: 601px) and (max-width: 860px) {
+  .topbar { gap: 14px; padding-right: 16px; padding-left: 16px; }
+  .topbar h1 { white-space: nowrap; }
+  .topbar-actions { gap: 9px; }
+  .topbar-button { padding: 8px; }
+  .topbar-button > span:last-child { display: none; }
+}
+@media (max-width: 600px) {
+  .app-shell { grid-template-rows: auto auto; }
+  .topbar { min-height: 60px; flex-wrap: wrap; padding-top: 12px; padding-bottom: 10px; }
+  .topbar-actions { margin-left: auto; }
+  .brand-lockup { flex-shrink: 0; }
+  .topbar-actions { gap: 5px; }
+  .topbar-actions .status-pill { display: none; }
+  .topbar-actions .import-model-button > span:last-child { display: inline; }
+  .content-view-switch { order: 3; width: 100%; }
+  .content-view-switch button { flex: 1; padding: 8px 10px; }
+  .app-shell.is-video { height: 100dvh; min-height: 0; grid-template-rows: auto minmax(0, 1fr); }
+  .video-footer { align-items: flex-start; gap: 12px; padding: 16px; }
+  .video-footer p { max-width: 225px; }
+  .video-footer p span { margin: 0 2px; }
+  .video-download { padding: 8px; }
+  .video-start-button { gap: 10px; padding: 14px 18px; font-size: 12px; white-space: nowrap; }
+}
